@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+include /usr/share/dpkg/architecture.mk
+
 export V=1
 
 ORIG_VERSION := $(shell dpkg-parsechangelog -S version)
@@ -35,6 +37,8 @@ CONFIG := --prefix=${TARGET_DIR} \
 	--enable-libfontconfig \
 	--enable-libharfbuzz \
 	--enable-libbluray \
+	--enable-libdvdnav \
+	--enable-libdvdread \
 	--enable-libmp3lame \
 	--enable-libopus \
 	--enable-libtheora \
@@ -90,6 +94,10 @@ override_dh_gencontrol:
 
 override_dh_auto_configure:
 	./configure $(CONFIG)
+
+override_dh_auto_build:
+	dh_auto_build
+	$(DEB_HOST_GNU_TYPE)-gcc $(CPPFLAGS) $(CFLAGS) tools/jellyfin-disc-info.c -o jellyfin-disc-info $(LDFLAGS) -ldvdnav -ldvdread
 
 override_dh_shlibdeps:
 	dh_shlibdeps

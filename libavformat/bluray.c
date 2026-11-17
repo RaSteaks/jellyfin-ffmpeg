@@ -138,7 +138,10 @@ static int bluray_open(URLContext *h, const char *path, int flags)
     */
 
     /* load title list */
-    num_title_idx = bd_get_titles(bd->bd, TITLES_RELEVANT, MIN_PLAYLIST_LENGTH);
+    /* The length filter is a heuristic for automatic main-feature selection.
+     * An explicitly selected playlist can be shorter (extras, test discs). */
+    num_title_idx = bd_get_titles(bd->bd, TITLES_RELEVANT,
+                                 bd->playlist < 0 ? MIN_PLAYLIST_LENGTH : 0);
     av_log(h, AV_LOG_INFO, "%d usable playlists:\n", num_title_idx);
     if (num_title_idx < 1) {
         return AVERROR(EIO);
@@ -210,16 +213,28 @@ static int64_t bluray_seek(URLContext *h, int64_t pos, int whence)
 
     switch (whence) {
     case SEEK_SET:
+        break;
     case SEEK_CUR:
+        pos += bd_tell(bd->bd);
+        break;
     case SEEK_END:
-        return bd_seek(bd->bd, pos);
+        pos += bd_get_title_size(bd->bd);
+        break;
 
     case AVSEEK_SIZE:
         return bd_get_title_size(bd->bd);
+
+    default:
+        av_log(h, AV_LOG_ERROR, "Unsupported whence operation %d\n", whence);
+        return AVERROR(EINVAL);
     }
 
-    av_log(h, AV_LOG_ERROR, "Unsupported whence operation %d\n", whence);
-    return AVERROR(EINVAL);
+    /* libbluray accepts absolute offsets. In particular, FFmpeg probes near
+     * EOF using SEEK_END to determine duration before seeking by timestamp. */
+    if (pos < 0)
+        return AVERROR(EINVAL);
+
+    return bd_seek(bd->bd, pos);
 }
 
 

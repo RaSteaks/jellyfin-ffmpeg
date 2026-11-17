@@ -17,6 +17,9 @@ Build-Depends:
  libgnutls28-dev | libgnutls-dev,
 # --enable-libbluray
  libbluray-dev,
+# --enable-libdvdnav / --enable-libdvdread
+ libdvdnav-dev,
+ libdvdread-dev,
 # --enable-gmp
  libgmp-dev,
 # --enable-libmp3lame

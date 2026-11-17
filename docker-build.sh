@@ -584,7 +584,9 @@ prepare_extra_amd64() {
 
     # INTEL-VAAPI-DRIVER
     pushd ${SOURCE_DIR}
-    git clone --depth=1 https://github.com/intel/intel-vaapi-driver.git
+    git init intel-vaapi-driver
+    git -C intel-vaapi-driver fetch --depth=1 https://github.com/intel/intel-vaapi-driver.git fd727a4e9cb8b2878a1e93d4dddc8dd1c1a4e0ea
+    git -C intel-vaapi-driver checkout --detach FETCH_HEAD
     pushd intel-vaapi-driver
     ./autogen.sh
     ./configure LIBVA_DRIVERS_PATH=${TARGET_DIR}/lib/dri
@@ -708,7 +710,10 @@ prepare_extra_amd64() {
 prepare_extra_arm() {
     # RKMPP
     pushd ${SOURCE_DIR}
-    git clone -b jellyfin-mpp-next --depth=1 https://github.com/nyanmisaka/rk-mirrors.git rkmpp
+    # Pin the formerly floating branch for repeatable custom image builds.
+    git init rkmpp
+    git -C rkmpp fetch --depth=1 https://github.com/nyanmisaka/rk-mirrors.git 848b885f95587994a53216e435f650041a894e31
+    git -C rkmpp checkout --detach FETCH_HEAD
     pushd rkmpp
     mkdir rkmpp_build
     pushd rkmpp_build
@@ -727,7 +732,9 @@ prepare_extra_arm() {
 
     # RKRGA
     pushd ${SOURCE_DIR}
-    git clone -b jellyfin-rga-next --depth=1 https://github.com/nyanmisaka/rk-mirrors.git rkrga
+    git init rkrga
+    git -C rkrga fetch --depth=1 https://github.com/nyanmisaka/rk-mirrors.git 1d330cc28551943bed3380261a5a9c6fbd58ff53
+    git -C rkrga checkout --detach FETCH_HEAD
     meson setup rkrga rkrga_build \
         ${MESON_CROSS_OPT} \
         --prefix=${TARGET_DIR} \
